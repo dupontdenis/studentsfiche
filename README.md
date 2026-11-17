@@ -1,32 +1,32 @@
 # StudentsFiche
 
-This project is a small front-end app that displays a list of students and shows their notes when a student is selected.
+Ce projet est une petite application front-end qui affiche la liste des étudiants et montre leurs notes lorsqu'un étudiant est sélectionné.
 
-## What the app does
+## À quoi sert l'application
 
-- Reads a list of students from `data.mjs`
-- Renders each student as a Bootstrap list item in `index.html`
-- Colors each item in red if at least one note is below 5, otherwise in blue
-- Shows the selected student's name and grades in the right-hand panel
+- Lit la liste des étudiants depuis `data.mjs`
+- Crée dynamiquement les éléments de la liste avec JavaScript
+- Colore chaque étudiant en rouge s'il a au moins une note inférieure à 5, sinon en bleu
+- Affiche le nom et les notes de l'étudiant sélectionné dans le panneau de droite
 
-## Project structure
+## Structure du projet
 
-- `index.html` : page structure and Bootstrap CSS/JS loading
-- `data.mjs` : exported student data array
-- `app.mjs` : rendering logic and interaction behavior
+- `index.html` : structure de la page et chargement de Bootstrap
+- `data.mjs` : tableau d'étudiants exporté
+- `app.mjs` : logique de rendu et interactions utilisateur
 
-## How the code works
+## Comment fonctionne le code
 
 ### `data.mjs`
 
-This file exports an array named `etudiants`. Each object contains:
+Ce fichier exporte un tableau nommé `etudiants`. Chaque objet contient :
 
-- `nom` : student name
-- `L2` : study field
-- `notes` : list of grades
-- `img` : profile image URL
+- `nom` : nom de l'étudiant
+- `L2` : filière
+- `notes` : liste des notes
+- `img` : URL de l'image de profil
 
-Example:
+Exemple :
 
 ```js
 export const etudiants = [
@@ -41,60 +41,78 @@ export const etudiants = [
 
 ### `app.mjs`
 
-This script imports the student list and does three main things:
+Ce script importe la liste des étudiants et réalise trois actions principales :
 
-1. Renders the list of students into the `#app` container
-2. Uses a condition to decide the color of each list item:
-   - if one grade is lower than 5 => red
-   - otherwise => blue
-3. Adds a click handler to the list to display the selected student details in the `#detail` block
+1. Crée le titre et la liste des étudiants dans le conteneur `#app`
+2. Détermine la couleur de chaque élément :
+   - si une note est inférieure à 5 => rouge
+   - sinon => bleu
+3. Ajoute un gestionnaire de clic pour afficher les détails de l'étudiant sélectionné dans le bloc `#detail`
 
-The rendering function is:
+La partie importante est que le rendu n'utilise plus de chaînes HTML en template literal. À la place, on crée des éléments DOM avec `document.createElement()`. Cela rend le code plus lisible et plus robuste.
+
+Exemple de rendu indépendant du template :
 
 ```js
 function renderStudent(etudiant) {
-  const resultat = etudiant.notes.some((note) => note < 5)
-    ? "list-group-item-danger"
-    : "list-group-item-primary";
+  const element = document.createElement("li");
+  const isLowGrade = etudiant.notes.some((note) => note < 5);
 
-  return `<li class="list-group-item ${resultat}" data-nom="${etudiant.nom}">${etudiant.nom}</li>`;
+  element.className = isLowGrade
+    ? "list-group-item list-group-item-danger"
+    : "list-group-item list-group-item-primary";
+  element.dataset.nom = etudiant.nom;
+  element.textContent = etudiant.nom;
+
+  return element;
 }
 ```
 
-This creates an HTML `<li>` element whose `data-nom` attribute stores the student's name. When the user clicks one of these items, the app finds the matching student in the array and shows their notes.
+Ensuite, l'élément est ajouté au DOM sans concaténer de chaînes HTML :
+
+```js
+const liste = document.createElement("ul");
+liste.className = "list-group";
+
+for (const etudiant of etudiants) {
+  liste.appendChild(renderStudent(etudiant));
+}
+```
+
+Cela permet d'éviter les dépendances fortes au "template" HTML et rend le code plus modulaire.
 
 ### `index.html`
 
-The HTML page contains:
+La page HTML contient :
 
-- the title "Liste des étudiants"
-- a left column (`#app`) for the student list
-- a right column (`#detail`) for the selected student's information
-- Bootstrap CSS and JS for styling
-- a module script that loads `app.mjs`
+- le titre "Liste des étudiants"
+- une colonne gauche (`#app`) pour la liste
+- une colonne droite (`#detail`) pour les détails de l'étudiant sélectionné
+- les fichiers CSS et JS Bootstrap
+- un script de module qui charge `app.mjs`
 
-## Running the app
+## Lancer l'application
 
-Because the project uses ES modules (`.mjs`), it is best to serve the folder with a small local web server.
+Comme le projet utilise des modules ES (`.mjs`), le plus simple est de servir le dossier avec un petit serveur local.
 
-From the project root, run:
+Depuis le dossier du projet, exécutez :
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open:
+Puis ouvrez :
 
 ```text
 http://localhost:8000/
 ```
 
-## Notes
+## Remarques
 
-This is a simple front-end exercise designed to practice:
+Ce projet est un petit exercice de front-end conçu pour pratiquer :
 
-- JavaScript modules
-- DOM rendering
-- event delegation
-- data-driven UI updates
-- Bootstrap styling
+- les modules JavaScript
+- le rendu dans le DOM
+- la délégation d'événements
+- la mise à jour dynamique de l'interface
+- le style Bootstrap
