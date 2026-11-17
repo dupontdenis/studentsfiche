@@ -43,43 +43,73 @@ export const etudiants = [
 
 Ce script importe la liste des étudiants et réalise trois actions principales :
 
-1. Crée le titre et la liste des étudiants dans le conteneur `#app`
-2. Détermine la couleur de chaque élément :
-   - si une note est inférieure à 5 => rouge
-   - sinon => bleu
-3. Ajoute un gestionnaire de clic pour afficher les détails de l'étudiant sélectionné dans le bloc `#detail`
+1. Détermine si l'étudiant a une note basse
+2. Génère le rendu HTML correspondant à cet étudiant
+3. Affiche la liste dans le conteneur `#app` et ajoute le clic pour voir les détails
 
-La partie importante est que le rendu n'utilise plus de chaînes HTML en template literal. À la place, on crée des éléments DOM avec `document.createElement()`. Cela rend le code plus lisible et plus robuste.
+L'idée du code indépendant du template est de séparer :
 
-Exemple de rendu indépendant du template :
+- la logique métier (calcul de l'état de l'étudiant)
+- le choix du rendu HTML (balise `<div>` ou `<li>`)
+- le conteneur global de la liste (`<div>` ou `<ul>`)
+
+On peut donc définir des fonctions de template qui ne dépendent pas de la logique de calcul.
+
+#### Template d'un étudiant sous forme de `<div>`
 
 ```js
-function renderStudent(etudiant) {
-  const element = document.createElement("li");
-  const isLowGrade = etudiant.notes.some((note) => note < 5);
-
-  element.className = isLowGrade
-    ? "list-group-item list-group-item-danger"
-    : "list-group-item list-group-item-primary";
-  element.dataset.nom = etudiant.nom;
-  element.textContent = etudiant.nom;
-
-  return element;
+export function studentDiv(etudiant, resultat) {
+  return `<div class="list-group-item ${resultat}" data-nom="${etudiant.nom}">${etudiant.nom}</div>`;
 }
 ```
 
-Ensuite, l'élément est ajouté au DOM sans concaténer de chaînes HTML :
+#### Template d'un étudiant sous forme de `<li>`
 
 ```js
-const liste = document.createElement("ul");
-liste.className = "list-group";
-
-for (const etudiant of etudiants) {
-  liste.appendChild(renderStudent(etudiant));
+export function studentLi(etudiant, resultat) {
+  return `<li class="list-group-item ${resultat}" data-nom="${etudiant.nom}">${etudiant.nom}</li>`;
 }
 ```
 
-Cela permet d'éviter les dépendances fortes au "template" HTML et rend le code plus modulaire.
+#### Template de la liste avec des `<div>`
+
+```js
+export function studentsDiv(contenu) {
+  return `<h2>Note Plancher (&lt;5/20)</h2><div class="list-group">${contenu}</div>`;
+}
+```
+
+#### Template de la liste avec des `<ul>` et `<li>`
+
+```js
+export function studentsUl(contenu) {
+  return `<h2>Note Plancher (&lt;5/20)</h2><ul class="list-group">${contenu}</ul>`;
+}
+```
+
+Cela permet de garder le code plus modulable : si on décide plus tard de remplacer un `<div>` par un `<li>`, il suffit de changer le template sans réécrire la logique qui determine l'état de l'étudiant.
+
+En pratique, la logique de calcul du résultat est indépendante du format final du rendu :
+
+```js
+const resultat = etudiant.notes.some((note) => note < 5)
+  ? "list-group-item-danger"
+  : "list-group-item-primary";
+```
+
+Ensuite, on choisit simplement le bon template selon le HTML souhaité :
+
+```js
+const html = studentLi(etudiant, resultat);
+```
+
+ou
+
+```js
+const html = studentDiv(etudiant, resultat);
+```
+
+C'est ce qu'on appelle un rendu indépendant du template : la logique est la même, mais le rendu final peut changer sans modifier le cœur du code.
 
 ### `index.html`
 
