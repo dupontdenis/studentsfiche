@@ -1,4 +1,4 @@
-import { etudiants } from "../data.mjs";
+import { etudiants } from "./data.mjs";
 
 // Fonction qui génère le HTML d'un étudiant à partir de ses données.
 // Une note inférieure à 5 entraîne la classe rouge ; sinon, la classe bleue.
