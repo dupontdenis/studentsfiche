@@ -15,7 +15,7 @@ function renderStudent(etudiant) {
 
 const app = document.getElementById("app");
 const titre = document.createElement("h2");
-titre.textContent = "Note Plancher (&lt; 5/20)";
+titre.textContent = "Note Plancher (< 5/20)";
 
 const liste = document.createElement("ul");
 liste.className = "list-group";
